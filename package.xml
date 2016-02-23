@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <name>light_drawing</name>
+  <version>0.0.0</version>
+  <description>The robotic light drawing package</description>
+  <maintainer email="hungpham2511@gmail.com">Pham Tien Hung</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>denso_openrave</build_depend>
+  <build_depend>printx_controller</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <run_depend>denso_openrave</run_depend>
+  <run_depend>printx_controller</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>std_msgs</run_depend>
+
+</package>
