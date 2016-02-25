@@ -80,7 +80,10 @@ class Controller(object):
 
         # Init planner and executor
         self.pl = PrintPlanner(self.env, robot_name, manip_name, hardware=False)
-        self.ex = DensoRobot(self.env, robot_name, manip_name)  
+        self.ex = DensoRobot(self.env, robot_name, manip_name)
+        self.ex.ScaleVelocityLimits(1)
+        self.ex.ScaleAccelerationLimits(1)
+
 
         # Advertise the service
         srv_name = 'draw_light'
