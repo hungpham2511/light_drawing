@@ -46,10 +46,29 @@
     </joint>
   </Kinbody>
 
+  <!-- Small torchlight -->
+  <Kinbody>
+      <body name="torchlight" type="dynamic">
+        <offsetfrom>ati_ft_sensor</offsetfrom>
+        <Geom type="cylinder">
+          <radius>0.01</radius>
+          <height>0.05</height>
+          <rotationaxis>1 0 0 90</rotationaxis>
+          <translation>0 0 0.025</translation>
+        </Geom>
+      </body>
+      <joint name="torchlight_to_denso" type="hinge" enable="false">
+        <body>ati_ft_sensor</body>
+        <body>torchlight</body>
+        <limits>0 0</limits>
+      </joint>
+  </Kinbody>
+
   <!-- Define the manipulator -->
   <Manipulator name="light">
     <base>link0</base>
     <effector>ati_ft_sensor</effector>
+    <translation>0 0 0.05</translation>
     <direction>0 0 1</direction>
   </Manipulator>
   
