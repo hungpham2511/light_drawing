@@ -22,19 +22,29 @@ svdpath = camel
 print "Done"
 data = []
 numpoint = 600
-xx = []
-yy = []
+X = []
+Y = []
 totaltime = 5
+framedimension = np.array([[-0.3,0.2],[0.1,0.6]]) # y,z in meter (square region is recommended)
+scale = 1
 for i in range(numpoint):
 	t = i/(numpoint+1e-10)
+	X.append(svdpath.point(t).real)
+	Y.append(svdpath.point(t).imag)
+maxX = np.max(X)
+minX = np.min(X)
+maxY = np.max(Y)
+minY = np.min(Y)
+scale = framedimension[0][1]-framedimension[0][0]
+if maxX -minX > maxY - minY:
+	max = maxX-minX
+else:
+	max = maxY-minY
+for i in range(numpoint):
 	x = 0.5
-	y = (svdpath.point(t).real-400)/1000.
-	z = (800-svdpath.point(t).imag)/1000.
-	xx.append(y)
-	yy.append(z)
+	y = scale*((X[i]-minX)/max)+framedimension[0][0]
+	z = scale*((-Y[i]+maxY)/max)+framedimension[1][0]
 	data.append([1/(numpoint+1e-10)*totaltime,x,y,z])
 
-for d in data:
-	print d
-plt.scatter(xx,yy)
+plt.scatter(np.transpose(data)[2],np.transpose(data)[3])
 plt.show()
