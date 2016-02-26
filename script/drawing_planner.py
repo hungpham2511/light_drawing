@@ -59,7 +59,8 @@ class Controller(object):
         table_id = int(read_parameter('~table_id', 2))
         # Init openrave env
         self.env = Environment()
-        self.env.SetViewer('qtcoin')
+        if sim:
+            self.env.SetViewer('qtcoin')
         # Get the robot
         rospack = rospkg.RosPack()
         path = rospack.get_path('light_drawing') + '/robots/denso_light.robot.xml'
@@ -83,7 +84,6 @@ class Controller(object):
         self.ex = DensoRobot(self.env, robot_name, manip_name)
         self.ex.ScaleVelocityLimits(1)
         self.ex.ScaleAccelerationLimits(1)
-
 
         # Advertise the service
         srv_name = 'draw_light'
