@@ -9,47 +9,63 @@ from numpy.linalg import norm
 import time
 import argparse
 
-def generate_circles_path():
-    ''' Generate a numpy file containing the coordiantes for
-    printing.
+# svg.path
+from svg.path import Path, Line, Arc, CubicBezier, QuadraticBezier
+from svg.path import parse_path
 
-    Dir: (($find_pkg light_drawing)/data/drawings/circle_demo.npy)
-    '''
+# xml
+from xml.dom import minidom
 
-    # Generate the path
-    x = 0.7
-    y = 0
-    z = 1.4
-    r = 0.2
-    delta_t = 1e-1
-    omega = 0.314
-    total_time = 30
-    delta_t_array = []
-    path_array = []
-    cur_time = 0
-    for i in range(int(total_time / delta_t)):
+def generate_path_from_svg(svg_file):
+    """ Generate npy array from svg file
+    """
+    rospy.loginfo("Getting svg from %s" % svg_file)
+
+    doc = minidom.parse(svg_file)  # Change the file name
+    path_strings = [path.getAttribute('d') for path
+                    in doc.getElementsByTagName('path')]
+    doc.unlink()
+
+    print "Exist ", len(path_strings)," path(s) in the SVG file"
+    camel = parse_path(path_strings[0]) # Select the path to extract
+    svdpath = camel
+    print "Done"
+    data = []
+    numpoint = 600
+    xx = []
+    yy = []
+    totaltime = 19
+    totaldist = 0
+    for i in range(numpoint):
+        t = i/(numpoint+1e-10)
+        x = 0.5
+        y = (svdpath.point(t).real - 400)/1000.
+        z = (800-svdpath.point(t).imag)/1000.
+        xx.append(y)
+        yy.append(z)
+        data.append(np.array([x,y,z]))
+        if i != 0:
+            totaldist += np.linalg.norm(data[i] - data[i-1])
+    vel = totaldist / totaltime
+
+    data_with_time = []
+    for i, d in enumerate(data):
         if i == 0:
-            delta_t_array.append(0)
-        else:
-            delta_t_array.append(delta_t)
+            data_with_time.append([0, d[0], d[1], d[2]])
+        delta_t = np.linalg.norm(data[i] - data[i - 1]) / vel
 
-        path_array.append([x + r * np.cos(omega * cur_time),
-                           y + r * np.sin(omega * cur_time),
-                           z])
+        data_with_time.append([delta_t, d[0], d[1], d[2]])
 
-        cur_time += delta_t
+    data_with_time = np.array([data_with_time])
+    # for d in data_with_time:
+    #     print d
+    # Save it down
+    path = svg_file.replace('svgs', 'drawings').replace('svg', 'npy')
+    np.save(path, data_with_time)
 
-    # Write it down
-    rospack = rospkg.RosPack()
-    path = rospack.get_path('light_drawing')+'/data/drawings/circle_demo.npy'
-    data = zip(delta_t_array, path_array)
-    data = np.array([])
-    np.save(path, data)
+    rospy.loginfo("Generated data at: %s" % path)    
 
-    # Test
-    test_arr = np.load(path)
 
-    np.testing.assert_allclose(test_arr, data)
 
 
 def generate_straight_path():
@@ -170,7 +186,6 @@ def generate_dancer():
 if __name__ == "__main__":
     # Init the node
     n = rospy.init_node('generate_drawing', log_level=rospy.DEBUG)
-    generate_straight_path()
-    generate_camel()
-    generate_dancer()
-    
+    rospack = rospkg.RosPack()
+    svg = rospack.get_path('light_drawing') + "/data/svgs/night_festival.svg"
+    generate_path_from_svg(svg)

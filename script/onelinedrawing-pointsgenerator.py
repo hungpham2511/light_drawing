@@ -9,7 +9,7 @@ from xml.dom import minidom
 import matplotlib.pyplot as plt
 
 print "Reading SVG file..."
-doc = minidom.parse("HumanDrawings.svg")  # Change the file name
+doc = minidom.parse("../data/svgs/night_festival.svg")  # Change the file name
 path_strings = [path.getAttribute('d') for path
                 in doc.getElementsByTagName('path')]
 doc.unlink()
@@ -28,10 +28,13 @@ totaltime = 5
 for i in range(numpoint):
 	t = i/(numpoint+1e-10)
 	x = 0.5
-	y = (svdpath.point(t).real-300)/1200.
-	z = (800-svdpath.point(t).imag)/1200.
+	y = (svdpath.point(t).real-400)/1000.
+	z = (800-svdpath.point(t).imag)/1000.
 	xx.append(y)
 	yy.append(z)
 	data.append([1/(numpoint+1e-10)*totaltime,x,y,z])
+
+for d in data:
+	print d
 plt.scatter(xx,yy)
 plt.show()
