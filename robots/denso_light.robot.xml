@@ -46,6 +46,23 @@
     </joint>
   </Kinbody>
 
+  <!--torchlight Handle -->
+  <Kinbody>
+      <body name="torchlight_handle" type="dynamic">
+        <offsetfrom>ati_ft_sensor</offsetfrom>
+        <Geom type="box">
+          <extents> 0.075 0.03 0.002</extents>
+          <!-- <rotationaxis>1 0 0 90</rotationaxis> -->
+          <translation>0.045 0 0.001</translation>
+        </Geom>
+      </body>
+      <joint name="torchlight_handle_to_denso" type="hinge" enable="false">
+        <body>ati_ft_sensor</body>
+        <body>torchlight_handle</body>
+        <limits>0 0</limits>
+      </joint>
+  </Kinbody>  
+
   <!-- Small torchlight -->
   <Kinbody>
       <body name="torchlight" type="dynamic">
