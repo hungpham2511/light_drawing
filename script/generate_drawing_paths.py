@@ -63,7 +63,66 @@ def generate_path_from_svg(svg_file):
     path = svg_file.replace('svgs', 'drawings').replace('svg', 'npy')
     np.save(path, data_with_time)
 
-    rospy.loginfo("Generated data at: %s" % path)    
+    rospy.loginfo("Generated data at: %s" % path)
+
+def generate_path_from_svg2(svg_file):
+    """ Generate npy array from svg file
+    """
+    rospy.loginfo("Getting svg from %s" % svg_file)
+
+    doc = minidom.parse(svg_file)  # Change the file name
+    path_strings = [path.getAttribute('d') for path
+                    in doc.getElementsByTagName('path')]
+    doc.unlink()
+
+    print "Exist ", len(path_strings)," path(s) in the SVG file"
+    camel = parse_path(path_strings[0]) # Select the path to extract
+    svdpath = camel
+    print "Done"
+    data = []
+    numpoint = 600
+    X = []
+    Y = []
+    totaltime = 19
+    totaldist = 0
+    framedimension = np.array([[-0.3,0.2],[0.1,0.6]]) # y,z in meter (square region is recommended)
+    scale = 1
+    for i in range(numpoint):
+        t = i/(numpoint+1e-10)
+        X.append(svdpath.point(t).real)
+        Y.append(svdpath.point(t).imag)
+    maxX = np.max(X)
+    minX = np.min(X)
+    maxY = np.max(Y)
+    minY = np.min(Y)
+    scale = framedimension[0][1]-framedimension[0][0]
+    if maxX -minX > maxY - minY:
+        max = maxX-minX
+    else:
+        max = maxY-minY
+    for i in range(numpoint):
+        x = 0.5
+        y = scale*((X[i]-minX)/max)+framedimension[0][0]
+        z = scale*((-Y[i]+maxY)/max)+framedimension[1][0]
+        data.append([x,y,z])
+        if i != 0:
+            totaldist += np.linalg.norm(data[i] - data[i-1])
+    vel = totaldist / totaltime
+    data_with_time = []
+    for i, d in enumerate(data):
+        if i == 0:
+            data_with_time.append([0, d[0], d[1], d[2]])
+        delta_t = np.linalg.norm(data[i] - data[i - 1]) / vel
+        data_with_time.append([delta_t, d[0], d[1], d[2]])
+
+    data_with_time = np.array([data_with_time])
+    # for d in data_with_time:
+    #     print d
+    # Save it down
+    path = svg_file.replace('svgs', 'drawings').replace('svg', 'npy')
+    np.save(path, data_with_time)
+
+    rospy.loginfo("Generated data at: %s" % path) 
 
 
 
