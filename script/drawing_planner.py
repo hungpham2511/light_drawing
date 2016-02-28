@@ -105,7 +105,7 @@ class Controller(object):
         dir = repo_dir + "/data/drawings/" + req.drawing_dir
         rospy.loginfo("Planning started! Looking for drawings at: %s" % dir)
         try:
-            printing_paths = convert_to_zipped_form(np.load(dir))
+            printing_paths = np.load(dir)
 
             # Plan to get robot's trajectories
             
@@ -115,7 +115,8 @@ class Controller(object):
                                                desired_pose=[1, 0, 0],
                                                step=0.005,
                                                sim=self.sim,
-                                               interpolation='linear')
+                                               interpolation='linear',
+                                               method='ikfast')
             duration = time.time() - t0
             rospy.loginfo("Planning took %0.1f seconds" % duration)
 

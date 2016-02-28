@@ -18,7 +18,7 @@ from svg.path import parse_path
 # xml
 from xml.dom import minidom
 
-def generate_path_from_svg(svg_file):
+def generate_path_from_svg(svg_file, path_no):
     """ Generate npy array from svg file
 
     Args:
@@ -33,17 +33,22 @@ def generate_path_from_svg(svg_file):
     doc.unlink()
 
     rospy.loginfo("Exist %d path(s) in the SVG file" % len(path_strings))
-    parsed_svg = parse_path(path_strings[0])  # Select the path to extract
+    parsed_svg = parse_path(path_strings[path_no])  # Select the path to extract
 
     # Frame setting
-    framedimension = np.array([[-0.2, 0.2], [0.4, 0.8]])  # y,z in meter (square region is recommended)
+    cp_x, cp_y, cp_z = 0.5, 0.0, 0.5
+    frame_length = 0.15
+    framedimension = np.array([[cp_y - frame_length,
+                                cp_y + frame_length],
+                                [cp_z - frame_length,
+                                 cp_z + frame_length]])  # y,z in meter (square region is recommended)
 
     # Extract data
     data = []
     numpoint = 1000  # Number of waypoints
     X = []
     Y = []
-    totaltime = 19
+    totaltime = 29
     totaldist = 0
     scale = 1
     for i in range(numpoint):
@@ -60,7 +65,7 @@ def generate_path_from_svg(svg_file):
     else:
         max = maxY-minY
     for i in range(numpoint):
-        x = 0.5
+        x = cp_x
         y = scale*((X[i]-minX)/max)+framedimension[0][0]
         z = scale*((-Y[i]+maxY)/max)+framedimension[1][0]
         data.append(np.array([x,y,z]))
@@ -73,8 +78,9 @@ def generate_path_from_svg(svg_file):
     for i, d in enumerate(data):
         if i == 0:
             data_with_time.append([0, d[0], d[1], d[2]])
-        delta_t = np.linalg.norm(data[i] - data[i - 1]) / vel
-        data_with_time.append([delta_t, d[0], d[1], d[2]])
+        else:
+            delta_t = np.linalg.norm(data[i] - data[i - 1]) / vel
+            data_with_time.append([delta_t, d[0], d[1], d[2]])
 
     # Save trajectory to numpy array
     data_with_time = np.array([data_with_time])
@@ -90,10 +96,11 @@ if __name__ == "__main__":
     # Create the parse
     parser = argparse.ArgumentParser(description="Input SVG file for robotic light drawing")
     parser.add_argument('--svg', help='Svg file name. File should be stored in /data/svgs/')
+    parser.add_argument('--no', help='Drawing no i-th')
     args = parser.parse_args(rospy.myargv()[1:])
 
     # Init the node
     n = rospy.init_node('generate_drawing', log_level=rospy.DEBUG)
     rospack = rospkg.RosPack()
     svg = rospack.get_path('light_drawing') + "/data/svgs/%s.svg" % args.svg
-    generate_path_from_svg(svg)
+    generate_path_from_svg(svg, int(args.no))
